@@ -34,15 +34,19 @@
 * |
 * No#  | when      who        what
 ******+*********+***********+**********************************************************************
-* 001  NEW       30/11/25   Harsh   Initial creation
-* 002  NEW       30/11/25   Kunsh Jain   Initial creation,Fixed Structure
+* 001  NEW       30/11/25   Harsh            Initial creation
+* 002  NEW       30/11/25   Kunsh Jain       Initial creation,Fixed Structure
+* 003  MOD       30/11/25   MuhammadRamzy    Refactored to ARK Framework namespace
 **************************************************************************************************/
 
-#ifndef FLIGHT_STATES_H
-#define FLIGHT_STATES_H
+#ifndef ARK_CORE_STATE_MACHINE_H
+#define ARK_CORE_STATE_MACHINE_H
 
-#include "config.h"
-#include "flight_system.h"
+#include "Config.h"
+#include "FlightSystem.h"
+
+namespace ARK {
+namespace Core {
 
 /**
  * @enum FlightState_t
@@ -148,4 +152,7 @@ FlightState_t FlightState_HandleLanded();
  */
 FlightState_t FlightState_HandleFailsafe();
 
-#endif // FLIGHT_STATES_H
+} // namespace Core
+} // namespace ARK
+
+#endif // ARK_CORE_STATE_MACHINE_H

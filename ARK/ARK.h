@@ -19,60 +19,32 @@
                         All rights reserved
 */
 /**************************************************************************************************
-* File: main.h
-* Author: Anubhav, Kunsh Jain
+* File: ARK.h
+* Author: Kunsh Jain
 * Created On: 30/11/25
 *
-* \brief Main entry point for A-R-K Flight Computer firmware.
+* \brief Main framework header for A-R-K.
 * \details
-*   - Initializes the FlightSystem (sensors + logger).
-*   - Runs the main mission loop.
-*   - Performs state machine dispatch via switch-case.
+*   - Includes all necessary core and HAL headers.
 *
 ***************************************************************************************************
 * HISTORY:
 *
 * +----- (NEW | MODify | ADD | DELete)
 * |
-* No#  | when      who        what
-******+*********+***********+**********************************************************************
-* 001  NEW       30/11/25   Kunsh Jain   Initial creation
+* No#  | when      who            what
+* ******+*********+**************+*****************************************************************
+* 001  NEW       30/11/25       Kunsh Jain       Initial creation
+* 002  MOD       30/11/25       MuhammadRamzy    Refactored to ARK Framework namespace
 **************************************************************************************************/
 
-/**
- * @file main.h
- * @brief Main header file for ARK flight computer firmware
- * @details This header includes all necessary dependencies for the main flight control loop.
- *          It brings together the configuration, flight system, and state machine components.
- * 
- * @author Anubhav, Kunsh Jain
- * @date 30/11/25
- * @version 1.0.0
- */
+#ifndef ARK_FRAMEWORK_H
+#define ARK_FRAMEWORK_H
 
-#ifndef MAIN_H
-#define MAIN_H
+#include "Core/Config.h"
+#include "Core/FlightSystem.h"
+#include "Core/StateMachine.h"
+#include "HAL/ISensor.h"
+#include "HAL/MockSensors.h"
 
-/**
- * @brief Global configuration parameters
- * @details Includes all threshold values, timing parameters, and system constants
- * @see config.h
- */
-#include "config.h"
-
-/**
- * @brief Flight system management class
- * @details Provides interface for sensor readings, actuator control, and data logging
- * @see FlightSystem
- */
-#include "Flight_Logic/flight_system.h"
-
-/**
- * @brief Flight state machine definitions
- * @details Defines all flight states and their handler functions
- * @see FlightState_t
- * @see FlightState_HandleBoot()
- */
-#include "Flight_Logic/flight_states.h"
-
-#endif // MAIN_H
+#endif // ARK_FRAMEWORK_H

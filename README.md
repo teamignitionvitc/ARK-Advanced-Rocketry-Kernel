@@ -267,18 +267,17 @@ All system parameters are centralized in `config.h`:
 **Code Organization**
 
 ```
-ARK/
-├── main.cpp              # Entry point & state machine
-├── main.h                # Main header
-├── config.h              # Global configuration
-├── Flight_Logic/
-│   ├── flight_system.h   # System class header
-│   ├── flight_system.cpp # System implementation
-│   ├── flight_states.h   # State definitions
-│   └── flight_states.cpp # State handlers
-├── Flight_Sensors/       # Sensor drivers
-├── Flight_Testing/       # Test utilities
-└── User_Documentation/   # Documentation
+```
+ARK-Advanced-Rocketry-Kernel-/
+├── ARK/                  # The Core Framework
+│   ├── ARK.h             # Main framework header
+│   ├── Core/             # Kernel logic (State Machine, FlightSystem)
+│   └── HAL/              # Hardware Abstraction Layer (Interfaces)
+├── User_App/             # Your Custom Application
+│   └── main.cpp          # Entry point & configuration
+├── public/               # Assets
+└── README.md             # Documentation
+```
 ```
 
 </td>
@@ -433,33 +432,74 @@ BOOT → IDLE → ARMED → LAUNCH → ASCENT → CRUISING → APOGEE
 
 ---
 
-## Installation
+## 🚀 Usage Guide
 
-<details open>
-<summary><h3>Method 1: Clone Repository</h3></summary>
+ARK is designed as a framework. You build **your** application on top of the ARK kernel.
 
+### 1. Clone the Repository
 ```bash
-# Clone the repository
-git clone https://github.com/teamignitionvitc/ARK-Advanced-Rocketry-Kernel-.git
+git clone https://github.com/Team-Ignition-VIT/ARK-Advanced-Rocketry-Kernel-.git
 cd ARK-Advanced-Rocketry-Kernel-
-
-# Open in your preferred IDE
-# Configure for your target platform
-# Build and upload to microcontroller
 ```
 
-</details>
+### 2. Understand the Structure
+- **ARK/**: This is the kernel. **Do not modify** files here unless you are contributing to the framework itself.
+- **User_App/**: This is where your code lives. You will write your `main.cpp` and custom sensor drivers here.
 
-<details>
-<summary><h3>Method 2: Download ZIP</h3></summary>
+### 3. Implement Your Sensors
+Create a class that inherits from `ARK::HAL::ISensor` for each of your sensors (e.g., BMP280, MPU6050).
 
-1. Download ZIP from GitHub repository
-2. Extract to your projects folder
-3. Open in Arduino IDE or PlatformIO
-4. Select your board and port
-5. Compile and upload
+```cpp
+#include "../ARK/HAL/ISensor.h"
 
-</details>
+class MyBarometer : public ARK::HAL::ISensor {
+public:
+    bool Init() override {
+        // Initialize your hardware here (e.g., I2C begin)
+        return true;
+    }
+    float Read() override {
+        // Return altitude in meters
+        return 0.0f; 
+    }
+    std::string GetName() const override { return "MyBarometer"; }
+};
+```
+
+### 4. Configure Your Mission
+Edit `User_App/main.cpp` to register your sensors and start the kernel.
+
+```cpp
+#include "../ARK/ARK.h"
+#include "MyBarometer.h" // Your custom driver
+
+using namespace ARK::Core;
+
+int main() {
+    // 1. Instantiate the System
+    FlightSystem system;
+
+    // 2. Register Your Hardware
+    system.RegisterAltimeter(new MyBarometer());
+    // system.RegisterAccelerometer(new MyAccelerometer());
+
+    // 3. Initialize & Run
+    system.System_Init();
+    
+    // 4. Run your main loop (or let the framework handle it)
+    while(true) {
+        // ...
+    }
+}
+```
+
+### 5. Build and Run
+Compile your application linking against the ARK core files.
+
+```bash
+g++ -std=c++11 -I. User_App/main.cpp ARK/Core/*.cpp -o my_flight_software
+./my_flight_software
+```
 
 ### Platform-Specific Setup
 

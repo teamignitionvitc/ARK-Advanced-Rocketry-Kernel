@@ -38,70 +38,94 @@
 * |
 * No#  | when      who        what
 ******+*********+***********+**********************************************************************
-* 001  NEW       23/11/25   Anubhav   Initial creation
-* 002  NEW       30/11/25   Kunsh Jain   Initial creation,Fixed Structure
+* 001  NEW       23/11/25   Anubhav          Initial creation
+* 002  NEW       30/11/25   Kunsh Jain       Initial creation,Fixed Structure
+* 003  MOD       30/11/25   MuhammadRamzy    Refactored to ARK Framework usage
 **************************************************************************************************/
 
-#include "main.h"
+#include "../ARK/ARK.h"
+#include <iostream>
+#include <thread>
+#include <chrono>
 
-/**************************************************************************************************
-* Static Variables
-**************************************************************************************************/
+// Use namespaces for easier access
+using namespace ARK::Core;
+using namespace ARK::HAL;
 
-/**
- * @brief Global variable tracking the current flight state
- * @details This static variable maintains the current state of the flight state machine.
- *          It is initialized to FLIGHTSTATE_BOOT and transitions through various states
- *          during the flight lifecycle.
- * @note This variable is modified only by state handler functions
- */
+// Global state for simulation
 static FlightState_t gCurrentFlightState = FLIGHTSTATE_BOOT;
 
-/**************************************************************************************************
-* Function Definitions
-**************************************************************************************************/
-
 /**
- * @brief Main entry point for the ARK flight computer firmware
- * @details Initializes the flight system and runs the main state machine loop.
- *          The loop continuously monitors the current flight state and dispatches
- *          to the appropriate state handler function.
- * 
- * @return int Returns 0 on normal termination (never reached in embedded systems)
- * 
- * @note This function runs indefinitely in an infinite loop.
- *       State transitions are handled by individual state handler functions.
- * 
- * @see FlightSystem::System_Init()
- * @see FlightState_HandleBoot()
- * @see FlightState_HandleIdle()
- * @see FlightState_HandleArmed()
- * @see FlightState_HandleLaunch()
- * @see FlightState_HandleAscent()
- * @see FlightState_HandleCruising()
- * @see FlightState_HandleApogee()
- * @see FlightState_HandleDeployment()
- * @see FlightState_HandleDescent()
- * @see FlightState_HandleLanded()
- * @see FlightState_HandleFailsafe()
+ * @brief Helper to update mock sensors for simulation
  */
+void UpdateSimulation(FlightSystem& system, int step)
+{
+    // Cast to mock sensors to set values
+    auto* altimeter = static_cast<MockBarometer*>(system.GetAltimeter());
+    auto* accelerometer = static_cast<MockAccelerometer*>(system.GetAccelerometer());
+
+    if (!altimeter || !accelerometer) return;
+
+    // Simulate flight profile based on step
+    if (step < 10) {
+        // Idle
+        altimeter->SetAltitude(0.0f);
+        accelerometer->SetAccelZ(9.8f);
+    } else if (step < 20) {
+        // Launch
+        altimeter->SetAltitude((step - 10) * 2.0f);
+        accelerometer->SetAccelZ(30.0f); // > 15.0 threshold
+    } else if (step < 50) {
+        // Ascent
+        float t = step - 20;
+        altimeter->SetAltitude(20.0f + t * 10.0f);
+        accelerometer->SetAccelZ(20.0f);
+    } else if (step < 70) {
+        // Coasting / Burnout
+        float t = step - 50;
+        altimeter->SetAltitude(320.0f + t * 5.0f);
+        accelerometer->SetAccelZ(-5.0f); // Decelerating
+    } else if (step < 80) {
+        // Apogee approach
+        altimeter->SetAltitude(420.0f); // Peak
+        accelerometer->SetAccelZ(-9.8f);
+    } else if (step < 100) {
+        // Descent
+        float t = step - 80;
+        altimeter->SetAltitude(420.0f - t * 20.0f);
+        accelerometer->SetAccelZ(9.8f);
+    } else {
+        // Landed
+        altimeter->SetAltitude(0.0f);
+        accelerometer->SetAccelZ(9.8f);
+    }
+}
+
 int main(void)
 {
+    // 1. Instantiate System (This sets the singleton instance)
     FlightSystem system;
 
-    /* Initialize system */
+    // 2. Register Hardware (Dependency Injection)
+    // In a real user app, they would include their specific sensor drivers here
+    // For this example, we use the Mock sensors provided by the framework
+    system.RegisterAltimeter(new MockBarometer());
+    system.RegisterAccelerometer(new MockAccelerometer());
+    system.RegisterStorage(new MockStorage());
+
+    // 3. Initialize System
     system.System_Init();
 
-    /**
-     * @brief Main state machine loop
-     * @details Infinite loop that continuously:
-     *          1. Checks the current flight state
-     *          2. Calls the appropriate state handler
-     *          3. Updates the current state based on handler return value
-     *          4. Repeats at MAIN_LOOP_PERIOD_MS frequency
-     */
-    while (true)
+    std::cout << "[MAIN] Starting User App Simulation..." << std::endl;
+
+    int step = 0;
+    const int MAX_STEPS = 120;
+
+    while (step < MAX_STEPS)
     {
+        // Update simulation environment
+        UpdateSimulation(system, step);
+
         /* Handle flight states */
         switch (gCurrentFlightState)
         {
@@ -150,6 +174,12 @@ int main(void)
                 gCurrentFlightState = FlightState_HandleFailsafe();
                 break;
         }
+
+        // Simulate time step
+        std::this_thread::sleep_for(std::chrono::milliseconds(MAIN_LOOP_PERIOD_MS));
+        step++;
     }
+    
+    std::cout << "[MAIN] Simulation Complete." << std::endl;
     return 0;
 }
