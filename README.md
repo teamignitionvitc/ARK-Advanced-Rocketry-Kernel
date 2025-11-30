@@ -501,6 +501,28 @@ g++ -std=c++11 -I. User_App/main.cpp ARK/Core/*.cpp -o my_flight_software
 ./my_flight_software
 ```
 
+---
+
+## 🧪 Testing & Simulation
+
+ARK includes a built-in testing framework for verifying your flight logic and sensor integration.
+
+### Running Tests
+To run the automated test suite, including the Software-in-the-Loop (SIL) simulation:
+
+```bash
+cd Tests
+make run
+```
+
+### Software-in-the-Loop (SIL)
+The framework includes a physics-based simulation that models rocket flight dynamics. This allows you to:
+- Verify state transitions under realistic conditions.
+- Test failsafe logic (e.g., launch aborts).
+- Validate mission logic without risking hardware.
+
+The SIL simulation runs a full flight profile, generating synthetic sensor data (Altitude, Acceleration) based on physics equations, and asserts that the `FlightSystem` reacts correctly at each stage.```
+
 ### Platform-Specific Setup
 
 <details>
