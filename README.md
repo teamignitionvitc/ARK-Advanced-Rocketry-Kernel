@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://teamignition.space/logo/head-logo.png" alt="Team Ignition Logo" width="400"/>
+<img src="public/ARK.jpeg" alt="Team Ignition Logo" width="400"/>
 
 <h1>ARK - Advanced Rocketry Kernel</h1>
 
