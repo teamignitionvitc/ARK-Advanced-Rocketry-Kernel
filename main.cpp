@@ -48,12 +48,43 @@
 * Static Variables
 **************************************************************************************************/
 
+/**
+ * @brief Global variable tracking the current flight state
+ * @details This static variable maintains the current state of the flight state machine.
+ *          It is initialized to FLIGHTSTATE_BOOT and transitions through various states
+ *          during the flight lifecycle.
+ * @note This variable is modified only by state handler functions
+ */
 static FlightState_t gCurrentFlightState = FLIGHTSTATE_BOOT;
 
 /**************************************************************************************************
 * Function Definitions
 **************************************************************************************************/
 
+/**
+ * @brief Main entry point for the ARK flight computer firmware
+ * @details Initializes the flight system and runs the main state machine loop.
+ *          The loop continuously monitors the current flight state and dispatches
+ *          to the appropriate state handler function.
+ * 
+ * @return int Returns 0 on normal termination (never reached in embedded systems)
+ * 
+ * @note This function runs indefinitely in an infinite loop.
+ *       State transitions are handled by individual state handler functions.
+ * 
+ * @see FlightSystem::System_Init()
+ * @see FlightState_HandleBoot()
+ * @see FlightState_HandleIdle()
+ * @see FlightState_HandleArmed()
+ * @see FlightState_HandleLaunch()
+ * @see FlightState_HandleAscent()
+ * @see FlightState_HandleCruising()
+ * @see FlightState_HandleApogee()
+ * @see FlightState_HandleDeployment()
+ * @see FlightState_HandleDescent()
+ * @see FlightState_HandleLanded()
+ * @see FlightState_HandleFailsafe()
+ */
 int main(void)
 {
     FlightSystem system;
@@ -61,7 +92,14 @@ int main(void)
     /* Initialize system */
     system.System_Init();
 
-    /* Main loop */
+    /**
+     * @brief Main state machine loop
+     * @details Infinite loop that continuously:
+     *          1. Checks the current flight state
+     *          2. Calls the appropriate state handler
+     *          3. Updates the current state based on handler return value
+     *          4. Repeats at MAIN_LOOP_PERIOD_MS frequency
+     */
     while (true)
     {
         /* Handle flight states */
