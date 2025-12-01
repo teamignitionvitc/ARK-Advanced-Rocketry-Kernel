@@ -20,7 +20,7 @@
 */
 /**************************************************************************************************
 * File: flight_states.cpp
-* Author: Anubhav, Kunsh Jain
+* Author: Harsh
 * Created On: 30/11/25
 *
 * \brief Flight state machine implementation for A-R-K Flight Computer.
@@ -36,17 +36,17 @@
 ******+*********+***********+**********************************************************************
 * 001  NEW       30/11/25   Harsh   Initial creation
 * 002  NEW       30/11/25   Kunsh Jain   Initial creation,Fixed Structure
+* 003  NEW       30/11/25   Harsh   Logic correction,Inner functional implementation.
 **************************************************************************************************/
 
 #include "flight_states.h"
+#include <cstdint>
 #include "flight_system.h"
+#include "flight_config.h"
+#include "math.h"
 
-/**
- * @brief Implementation of BOOT state handler
- * @details Checks system health and transitions to IDLE when ready.
- *          This is the initial state on power-up.
- * @return FlightState_t IDLE if system healthy, BOOT otherwise
- */
+
+
 FlightState_t FlightState_HandleBoot()
 {
     if (FlightSystem::CheckHealth())
@@ -56,107 +56,110 @@ FlightState_t FlightState_HandleBoot()
     return FLIGHTSTATE_BOOT;
 }
 
-/**
- * @brief Implementation of IDLE state handler
- * @details Pre-launch standby. Waits for arming command or manual trigger.
- * @return FlightState_t ARMED (placeholder - implement arming logic)
- * @todo Implement actual arming logic (button press, command, etc.)
- */
 FlightState_t FlightState_HandleIdle()
 {
-    return FLIGHTSTATE_ARMED;
-}
+    if (FlightSystem::CheckCommand("ARM"))
+    {
+        return FLIGHTSTATE_ARMED;
+    }
 
-/**
- * @brief Implementation of ARMED state handler
- * @details Monitors for launch detection based on acceleration and altitude.
- * @return FlightState_t LAUNCH when liftoff detected
- * @todo Implement actual launch detection using GetAccelZ() and GetAltitude()
+    return FLIGHTSTATE_IDLE;
+}
+/*
+ * need to create object of flight system to access non-static methods
  */
 FlightState_t FlightState_HandleArmed()
 {
-    return FLIGHTSTATE_LAUNCH;
+    float currentAlt   = FlightSystem::GetAltitude();
+    float currentAccel = FlightSystem::GetAccelZ();
+    if ((currentAlt > THRESHOLD_Altitude) || (currentAccel > THRESHOLD_ACC))
+    {
+        return FLIGHTSTATE_LAUNCH;
+    }
+    return FLIGHTSTATE_ARMED;
 }
 
-/**
- * @brief Implementation of LAUNCH state handler
- * @details Confirms liftoff and transitions to powered ascent.
- * @return FlightState_t ASCENT
- */
 FlightState_t FlightState_HandleLaunch()
 {
+    FlightSystem::LogData();
     return FLIGHTSTATE_ASCENT;
 }
 
-/**
- * @brief Implementation of ASCENT state handler
- * @details Monitors powered flight phase. Detects motor burnout.
- * @return FlightState_t CRUISING when motor burnout detected
- * @todo Implement motor burnout detection logic
- */
 FlightState_t FlightState_HandleAscent()
 {
+    float currentA = FlightSystem::GetAccelZ();
+    if (currentA < 0.0f)
+    {
+        return FLIGHTSTATE_CRUISING;
+    }
+    return FLIGHTSTATE_ASCENT;
+}
+
+FlightState_t FlightState_HandleCruising()
+{
+    float currentV = FlightSystem::GetVelocityZ();
+    if (currentV <= 0.0f)
+    {
+        return FLIGHTSTATE_APOGEE;
+    }
     return FLIGHTSTATE_CRUISING;
 }
 
-/**
- * @brief Implementation of CRUISING state handler
- * @details Monitors unpowered ascent. Detects apogee approach.
- * @return FlightState_t APOGEE when peak altitude detected
- * @todo Implement apogee detection using velocity and altitude
- */
-FlightState_t FlightState_HandleCruising()
-{
-    return FLIGHTSTATE_APOGEE;
-}
-
-/**
- * @brief Implementation of APOGEE state handler
- * @details Confirms peak altitude and initiates deployment sequence.
- * @return FlightState_t DEPLOYMENT
- */
 FlightState_t FlightState_HandleApogee()
 {
+    static float s_maxAltitude = 0.0f;
+    float currentAlt = FlightSystem::GetAltitude();
+    if (currentAlt > s_maxAltitude)
+    {
+        s_maxAltitude = currentAlt;
+    }
+    if ((s_maxAltitude - currentAlt) >= THRESHold_APOGE)
+    {
+        return FLIGHTSTATE_DEPLOYMENT;
+    }
+
     return FLIGHTSTATE_DEPLOYMENT;
 }
 
-/**
- * @brief Implementation of DEPLOYMENT state handler
- * @details Manages recovery system deployment (parachute, etc.).
- * @return FlightState_t DESCENT when deployment confirmed
- * @todo Implement deployment confirmation logic
- */
 FlightState_t FlightState_HandleDeployment()
 {
+    FlightSystem::DeployParachute();
     return FLIGHTSTATE_DESCENT;
 }
 
-/**
- * @brief Implementation of DESCENT state handler
- * @details Monitors controlled descent. Detects landing.
- * @return FlightState_t LANDED when touchdown detected
- * @todo Implement landing detection using altitude stability
- */
 FlightState_t FlightState_HandleDescent()
 {
-    return FLIGHTSTATE_LANDED;
+    static uint32_t s_timerStart = 0;
+    static float    s_lastAlt    = 0.0f;
+    static bool     s_timerActive = false;
+    float currentAlt = FlightSystem::GetAltitude();
+    uint32_t now     = millis();
+    if (fabs(currentAlt - s_lastAlt) < THRESH_LANDING_ALT_NOISE) {
+        if (!s_timerActive)
+        {
+            s_timerStart = now;
+            s_timerActive = true;
+        }
+        if ((now - s_timerStart) >= TIME_LANDING_STABLE_MS)
+        {
+            return FLIGHTSTATE_LANDED;
+        }
+    }else {
+        s_timerActive = false;
+    }
+    s_lastAlt = currentAlt;
+    return FLIGHTSTATE_DESCENT;
 }
-
-/**
- * @brief Implementation of LANDED state handler
- * @details Post-flight terminal state. Remains in LANDED.
- * @return FlightState_t Always LANDED
- */
+/*
+ * buzzer beep function only when buzzer is installed.
+*/
 FlightState_t FlightState_HandleLanded()
 {
+   /* FlightSystem::Actuators_BuzzerBeep();*/
     return FLIGHTSTATE_LANDED;
 }
-/**
- * @brief Implementation of FAILSAFE state handler
- * @details Emergency terminal state for system failures.
- * @return FlightState_t Always FAILSAFE
- */
 FlightState_t FlightState_HandleFailsafe()
 {
+    FlightSystem::DeployParachute();
     return FLIGHTSTATE_FAILSAFE;
 }
