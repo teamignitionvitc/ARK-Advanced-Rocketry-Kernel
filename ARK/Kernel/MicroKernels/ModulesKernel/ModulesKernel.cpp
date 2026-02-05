@@ -106,11 +106,19 @@ namespace ARK {
         SystemConsole.Print("Recovery/Ejection module enabled");
         // Initialize pyro channels GPIO
         #endif
-
+        // Analog Inputs if necessary
         #if IS_ANALOG
         SystemConsole.Print("Analog input module enabled");
         #endif
-
+        //Audio, speaker etc.
+        #if IS_AUDIO
+        SystemConsole.Print("Audio module enabled");
+        #endif
+        //Payload if Present
+        #if IS_PAYLOAD
+        SystemConsole.Print("Payload module enabled");  
+        #endif
+        //LED or Indicators
         #if IS_LIGHT
         SystemConsole.Print("Light (LED) module enabled");
         #endif
