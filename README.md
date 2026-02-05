@@ -1,6 +1,6 @@
 # ARK: Advanced Rocketry Kernel
 
-![ARK Logo](Documentation/public/public/ark_logo.png)
+![ARK Logo](Documentation/public/ark_logo.png)
 
 **ARK** is a robust, multi-architecture avionics framework designed for reliability and portability. It supports **ESP32**, **RP2040 (Pico)**, and **PC Simulation (SIL)** out of the box.
 
