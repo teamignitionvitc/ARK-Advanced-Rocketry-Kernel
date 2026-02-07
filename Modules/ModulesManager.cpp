@@ -1,16 +1,16 @@
 
-#include "ModulesKernel.hpp"
+#include "ModulesManager.hpp"
+#include "Config.hpp"
 
 
 namespace ARK {
+namespace Modules {
 
     void Initialize() {
-        // Modules initialization logic
-        // Verify config and initialize enabled modules
     }
 
     void Update() {
-        // Module update logic
     }
 
+}
 }
