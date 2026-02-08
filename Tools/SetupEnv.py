@@ -2,7 +2,7 @@ import os
 import subprocess
 import platform
 import shutil
-<<<<<<< HEAD
+#<<<<<<< HEAD
 
 def install_dependencies():
     """Peak Automation: Installs the ARM cross-compiler and build tools if missing."""
@@ -36,7 +36,7 @@ def setup_pico():
 
     # 2. Automatically generate/update the bridge file for the root CMakeLists.txt
     import_file = "pico_sdk_import.cmake"
-=======
+#=======
 import sys
 
 def install_system_dependencies():
@@ -86,14 +86,14 @@ def setup_pico():
     
     import_file = os.path.join(build_dir, "pico_sdk_import.cmake")
     
->>>>>>> 452b8f4 (Re-initialized repository with clean .gitignore and synced structure)
+#>>>>>>> 452b8f4 (Re-initialized repository with clean .gitignore and synced structure)
     content = (
         "if (NOT PICO_SDK_PATH)\n"
         f"    set(PICO_SDK_PATH \"{sdk_path}\")\n"
         "endif ()\n"
         "include(${PICO_SDK_PATH}/pico_sdk_init.cmake)\n"
     )
-<<<<<<< HEAD
+#<<<<<<< HEAD
     with open(import_file, "w") as f:
         f.write(content)
             
@@ -111,7 +111,7 @@ def setup_esp32():
         install_cmd = "install.bat" if platform.system() == "Windows" else "./install.sh"
         subprocess.run(install_cmd, shell=True, check=True)
     return target_dir
-=======
+#=======
     try:
         with open(import_file, "w") as f:
             f.write(content)
@@ -172,4 +172,4 @@ if __name__ == "__main__":
     pico_path = setup_pico()
     idf_path = setup_esp32()
     create_env_file(pico_path, idf_path)
->>>>>>> 452b8f4 (Re-initialized repository with clean .gitignore and synced structure)
+#>>>>>>> 452b8f4 (Re-initialized repository with clean .gitignore and synced structure)

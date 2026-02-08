@@ -10,13 +10,7 @@ namespace ARK {
             }
 
             void Time::DelayUntil(uint64_t target_us) {
-<<<<<<< HEAD
-                while (GetMicros() < target_us) {
-                    tight_loop_contents();
-                }
-=======
                 sleep_until(from_us_since_boot(target_us));
->>>>>>> 452b8f4 (Re-initialized repository with clean .gitignore and synced structure)
             }
 
             void Time::SleepUs(uint64_t us) {

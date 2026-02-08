@@ -7,6 +7,7 @@ void UserEvaluateTransitions(StatesManager& flightManager) {
         // ...
         // if (v> 100) {
         //     flightManager.SetState(FlightState::INITIALIZING);
+        //}
     }
     
     if (ARK::IsState(FlightState::INITIALIZING)) {

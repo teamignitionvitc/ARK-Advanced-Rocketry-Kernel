@@ -10,7 +10,9 @@
 namespace ARK {
 namespace Modules {
     void Initialize();
-    void Update(); 
+    void Update();
+    ::Modules::BMP280& GetBMP();
+    ::Modules::MPU9250& GetMPU();
 }
 }
 
