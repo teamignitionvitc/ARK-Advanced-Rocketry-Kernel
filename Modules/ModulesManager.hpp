@@ -1,9 +1,19 @@
 #ifndef ARK_MODULES_MANAGER_HPP
 #define ARK_MODULES_MANAGER_HPP
 
+#include "BMP280/BMP280.hpp"
+#include "MPU9250/MPU9250.hpp"
+#include "L89/L89.hpp"
+#include "QMC5883L/QMC5883L.hpp"
+#include "NRF24/NRF24.hpp"
+
 namespace ARK {
-    static void Initialize();
-    static void Update(); 
+namespace Modules {
+    void Initialize();
+    void Update();
+    ::Modules::BMP280& GetBMP();
+    ::Modules::MPU9250& GetMPU();
+}
 }
 
 #endif

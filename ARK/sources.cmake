@@ -29,6 +29,8 @@ set(ARK_COMMON_SOURCES
     # Modules
     Modules/ModulesManager.cpp
     Modules/WS2812/WS2812.cpp
+    Modules/BMP280/BMP280.cpp
+    Modules/MPU9250/MPU9250.cpp
 
     # User Code
     User/UserCode.cpp

@@ -49,6 +49,7 @@ elseif(ARCH_TARGET STREQUAL "PICO")
     )
     
     add_executable(ARK_Avionics ${PICO_SOURCES})
+    set_target_properties(ARK_Avionics PROPERTIES OUTPUT_NAME "ARK_Avionics" SUFFIX ".elf")
 
     # PIO Generation
     pico_generate_pio_header(ARK_Avionics ${CMAKE_SOURCE_DIR}/Modules/WS2812/ws2812.pio)
@@ -84,6 +85,9 @@ elseif(ARCH_TARGET STREQUAL "PICO")
         hardware_pwm
         hardware_watchdog
     )
+    
+    pico_enable_stdio_usb(ARK_Avionics 1)
+    pico_enable_stdio_uart(ARK_Avionics 0)
     pico_add_extra_outputs(ARK_Avionics)
 
 elseif(ARCH_TARGET STREQUAL "SIL")
