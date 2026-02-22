@@ -8,6 +8,8 @@ namespace ARK {
         namespace Pico {
             class I2C : public ARK::HAL::I2C {
             public:
+                static constexpr uint32_t I2C_TIMEOUT_US = 100000; // 100ms timeout
+                
                 void Init(uint8_t port_num, uint8_t sda_pin, uint8_t scl_pin, uint32_t baudrate) override {
                     _inst = (port_num == 0) ? i2c0 : i2c1;
                     i2c_init(_inst, baudrate);
@@ -19,20 +21,25 @@ namespace ARK {
 
                 bool Write(uint8_t addr, uint8_t reg, uint8_t data) override {
                     uint8_t buf[] = {reg, data};
-                    return i2c_write_blocking(_inst, addr, buf, 2, false) == 2;
+                    int result = i2c_write_timeout_us(_inst, addr, buf, 2, false, I2C_TIMEOUT_US);
+                    return result == 2;
                 }
 
                 bool Write(uint8_t addr, uint8_t* data, size_t len) override {
-                    return i2c_write_blocking(_inst, addr, data, len, false) == len;
+                    int result = i2c_write_timeout_us(_inst, addr, data, len, false, I2C_TIMEOUT_US);
+                    return result == (int)len;
                 }
 
                 bool Read(uint8_t addr, uint8_t reg, uint8_t* buffer, size_t len) override {
-                    i2c_write_blocking(_inst, addr, &reg, 1, true);
-                    return i2c_read_blocking(_inst, addr, buffer, len, false) == len;
+                    int result = i2c_write_timeout_us(_inst, addr, &reg, 1, true, I2C_TIMEOUT_US);
+                    if (result != 1) return false;
+                    result = i2c_read_timeout_us(_inst, addr, buffer, len, false, I2C_TIMEOUT_US);
+                    return result == (int)len;
                 }
 
                 bool Read(uint8_t addr, uint8_t* buffer, size_t len) override {
-                    return i2c_read_blocking(_inst, addr, buffer, len, false) == len;
+                    int result = i2c_read_timeout_us(_inst, addr, buffer, len, false, I2C_TIMEOUT_US);
+                    return result == (int)len;
                 }
 
             private:

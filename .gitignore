@@ -23,7 +23,8 @@ sdkconfig.old
 .cproject
 *.swp
 *.swo
-
+.venv/
+.pytest_cache/
 # Temporary files
 *~
 .DS_Store

@@ -74,6 +74,7 @@ elseif(ARCH_TARGET STREQUAL "PICO")
     
     target_link_libraries(ARK_Avionics 
         pico_stdlib 
+        pico_stdio_usb
         hardware_clocks 
         hardware_vreg
         hardware_i2c
@@ -84,6 +85,7 @@ elseif(ARCH_TARGET STREQUAL "PICO")
         hardware_pio
         hardware_pwm
         hardware_watchdog
+        hardware_gpio
     )
     
     pico_enable_stdio_usb(ARK_Avionics 1)

@@ -1,15 +1,15 @@
-
 #include "ModulesKernel.hpp"
+#include "Modules/ModulesManager.hpp"
 
 
 namespace ARK {
 
     void ModulesKernel::Initialize() {
-        // TODO: Initialize all modules (sensors, actuators, etc.) here
+        ARK::Modules::Initialize();
     }
 
     void ModulesKernel::Update() {
-        // TODO: Update all modules (read sensors, control actuators, etc.) here
+        ARK::Modules::Update();
     }
 
 }

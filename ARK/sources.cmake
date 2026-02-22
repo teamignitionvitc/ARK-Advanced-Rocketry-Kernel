@@ -3,6 +3,7 @@
 
 set(ARK_COMMON_SOURCES
     ARK/Ark.cpp
+    ARK/ark.cpp                             # New unified API
     ARK/Kernel/Loops/SuperiorLoop.cpp
     ARK/Kernel/StateMachine/States.cpp
     
@@ -26,15 +27,16 @@ set(ARK_COMMON_SOURCES
     ARK/System/Peripherals/Pwm/Pwm.cpp
     ARK/System/Peripherals/Adc/Adc.cpp
 
-    # Modules
+    # Modules (conditionally compiled via #if guards)
     Modules/ModulesManager.cpp
     Modules/WS2812/WS2812.cpp
     Modules/BMP280/BMP280.cpp
     Modules/MPU9250/MPU9250.cpp
+    Modules/Buzzer/Buzzer.cpp
+    Modules/LED/LED.cpp
 
     # User Code
     User/UserCode.cpp
-    User/UserTransitions.cpp
 )
 
 set(ARK_COMMON_INCLUDE_DIRS

@@ -1,60 +1,99 @@
 #ifndef STATES_HPP
 #define STATES_HPP
 
-enum class FlightState {
-    BOOT = 0,
-    INITIALIZING = 1,
-    CALIBRATION = 2,
-    IDLE = 3,
-    PRE_ARM = 4,
-    ARMED = 5,
-    LAUNCH = 6,
-    ASCENT = 7,
-    BURNOUT = 8,
-    SEPARATION = 9,
-    CRUISING = 10,
-    COASTING = 11,
-    APOGEE = 12,
-    DROGUE = 13,
-    DOUBLE_DEPLOYMENT = 14,
-    MAIN_DEPLOYMENT = 15,
-    DESCENT = 16,
-    LANDING_DETECTION = 17,
-    LANDED = 18,
-    FAILSAFE = 19
+#include "../../../Config.hpp"
+#include <cstdint>
+
+/* =============================================================================
+ * Flight State Enum (compact uint8_t - saves RAM)
+ * 
+ * SIMPLE mode uses 6 states: IDLE, ARMED, FLIGHT, RECOVERY, LANDED, FAULT
+ * ADVANCED mode adds finer states for complex missions
+ * =============================================================================
+ */
+
+#if ARK_FLIGHT_MODE == ARK_FLIGHT_MODE_SIMPLE
+// Simple mode: 6 states for most rockets (~90% of use cases)
+enum FlightState : uint8_t {
+    IDLE = 0,       // System ready, waiting for arm command
+    ARMED,          // Armed and ready for launch
+    FLIGHT,         // Active flight (launch through apogee)
+    RECOVERY,       // Descending with chutes deployed
+    LANDED,         // On ground, mission complete
+    FAULT           // Error state
 };
 
+// Total: 6 states
+#define FLIGHT_STATE_COUNT 6
+
+#else
+// Advanced mode: 10 states for complex missions
+enum FlightState : uint8_t {
+    IDLE = 0,           // System ready, waiting for arm command
+    ARMED,              // Armed and ready for launch
+    LAUNCH,             // Motor ignition detected
+    ASCENT,             // Powered flight phase
+    BURNOUT,            // Motor burnout, unpowered ascent
+    APOGEE,             // Peak altitude reached
+    DROGUE_DEPLOY,      // Drogue chute deployment
+    MAIN_DEPLOY,        // Main chute deployment
+    LANDED,             // On ground, mission complete
+    FAULT               // Error state
+};
+
+// Total: 10 states
+#define FLIGHT_STATE_COUNT 10
+
+#endif
+
+/* =============================================================================
+ * State Machine Class (switch-case dispatch, no virtual functions)
+ * =============================================================================
+ */
 class StatesManager {
 public:
     StatesManager();
-    virtual ~StatesManager() = default;
-
-    virtual void HandleBoot(); 
-    virtual void HandleInitializing(); 
-    virtual void HandleCalibration(); 
-    virtual void HandleIdle(); 
-    virtual void HandlePreArm(); 
-    virtual void HandleArmed();
-    virtual void HandleLaunch(); 
-    virtual void HandleAscent(); 
-    virtual void HandleBurnout(); 
-    virtual void HandleSeparation(); 
-    virtual void HandleCruising(); 
-    virtual void HandleCoasting(); 
-    virtual void HandleApogee(); 
-    virtual void HandleDrogue();
-    virtual void HandleDoubleDeployment(); 
-    virtual void HandleMainDeployment(); 
-    virtual void HandleDescent(); 
-    virtual void HandleLandingDetection(); 
-    virtual void HandleLanded(); 
-    virtual void HandleFailsafe(); 
     
+    // Main tick function - call this from the kernel loop
+    void Tick();
+    
+    // State control
     void SetState(FlightState newState);
     FlightState GetState() const;
+    
+    // User-friendly state query
+    bool isArmed() const;
+    bool isFlying() const;
+    bool isLanded() const;
+    bool hasFault() const;
+    
+    // State name for debugging
+    const char* GetStateName() const;
 
-protected:
+private:
     FlightState currentState;
+    uint32_t stateEntryTime;  // Timestamp when current state was entered
+    
+    // State handlers (non-virtual, called via switch-case)
+    void handleIdle();
+    void handleArmed();
+    void handleFault();
+    void handleLanded();
+    
+#if ARK_FLIGHT_MODE == ARK_FLIGHT_MODE_SIMPLE
+    void handleFlight();
+    void handleRecovery();
+#else
+    void handleLaunch();
+    void handleAscent();
+    void handleBurnout();
+    void handleApogee();
+    void handleDrogueDeploy();
+    void handleMainDeploy();
+#endif
 };
+
+// Global state manager instance
+extern StatesManager FlightManager;
 
 #endif
